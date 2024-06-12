@@ -1,36 +1,42 @@
+// server.js (database server)
+
 const express = require('express');
-const { MongoClient } = require('mongodb');
+const mongoose = require('mongoose');
 const app = express();
-const url = 'mongodb://localhost:27017'; 
-const dbName = 'microservice-db';
+const PORT = process.env.PORT || 5000;
 
-let db;
+// MongoDB connection
+mongoose.connect('mongodb://localhost:27017/microservice-app', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+const db = mongoose.connection;
+db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
-MongoClient.connect(url, (err, client) => {
-  if (err) {
-    console.error(err);
-    process.exit(1);
-  }
-  db = client.db(dbName);
-  console.log('Connected to MongoDB');
+const Schema = mongoose.Schema;
+const DataSchema = new Schema({
+  _id: Schema.Types.ObjectId,
+  name: String,
+  age: Number,
+});
 
-  // API Endpoint to fetch data from MongoDB
-  app.get('/api/fetch-data', async (req, res) => {
-    try {
-      const data = await db.collection('microservice-app').find({}).toArray(); 
+const DataModel = mongoose.model('Data', DataSchema);
+
+// Route to fetch data from MongoDB
+app.get('/api/fetch-data', (req, res) => {
+    DataModel.find({})
+    .exec()
+    .then((data) => {
       res.json(data);
-    } catch (error) {
-      res.status(500).json({ message: 'Error fetching data from MongoDB' });
-    }
-  });
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).json({ error: 'Internal Server Error' });
+    });
 
-  app.get('/', (req, res) => {
-    res.send('Database server is running');
-  });
+});
 
-  // Start the server
-  const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => {
-    console.log(`Database server running on port ${PORT}`);
-  });
+// Start server
+app.listen(PORT, () => {
+  console.log(`Database Server is running on http://localhost:${PORT}`);
 });

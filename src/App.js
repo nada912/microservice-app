@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import LoginPage from './components/LoginPage';
-import RestrictedPage from './components/RestrictedPage';
+import LoginPage from 'components/LoginPage';
+import RestrictedPage from 'components/RestrictedPage';
 
 const App = () => {
   const isAuthenticated = () => {
